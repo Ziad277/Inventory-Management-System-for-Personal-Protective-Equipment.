@@ -1,0 +1,412 @@
+
+
+START
+IMPORT datetime
+
+DEFINE FUNCTION menuDisplay()
+    OUTPUT('=============================')
+    OUTPUT('= Inventory Management Menu =')
+    OUTPUT('=============================')
+    OUTPUT('(1) Update Inventory')
+    OUTPUT('(2) Search Item IN Inventory')  
+    OUTPUT('(3) Print Inventory Report')
+    OUTPUT('(4) Quit')
+    SET CHOICE TO int(INPUT("Enter choice: "))
+    menuSelection(CHOICE)
+
+DEFINE FUNCTION menuSelection(CHOICE)
+    IF CHOICE EQUALS 1 THEN
+        updateInventory()
+        menuDisplay()
+    ELSEIF CHOICE EQUALS 2 THEN
+        searchInventory()
+        menuDisplay()
+    ELSEIF CHOICE EQUALS 3 THEN
+        OUTPUTInventory()
+        menuDisplay()
+    ELSEIF CHOICE EQUALS 4 THEN
+        exit()
+    ENDIF
+
+DEFINE FUNCTION hospital(index,item_description,item_quantity)
+    SET item_quantity TO item_quantity[1:]
+    SET list TO open('hospital.txt', 'r').readlines()
+    SET list[index] TO list[index].strip().split(",")
+    IF item_description EQUALS 'HC' THEN
+        SET list[index][2] TO str(int(list[index][2]) + int(item_quantity))
+        SET list[index] TO ",".join(list[index])
+        SET list[index] TO list[index] + "\n"
+    ELSEIF item_description EQUALS 'FS' THEN
+        SET list[index][4] TO str(int(list[index][4]) + int(item_quantity))
+        SET list[index] TO ",".join(list[index])
+        SET list[index] TO list[index] + "\n"
+    ELSEIF item_description EQUALS 'MS' THEN
+        SET list[index][6] TO str(int(list[index][6]) + int(item_quantity))
+        SET list[index] TO ",".join(list[index])
+        SET list[index] TO list[index] + "\n"
+    ELSEIF item_description EQUALS 'GL' THEN
+        SET list[index][8] TO str(int(list[index][8]) + int(item_quantity))
+        SET list[index] TO ",".join(list[index])
+        SET list[index] TO list[index] + "\n"
+    ELSEIF item_description EQUALS 'GW' THEN
+        SET list[index][10] TO str(int(list[index][10]) + int(item_quantity))
+        SET list[index] TO ",".join(list[index])
+        SET list[index] TO list[index] + "\n"
+    ELSEIF item_description EQUALS 'SC' THEN
+        SET list[index][12] TO str(int(list[index][12]) + int(item_quantity))
+        SET list[index] TO ",".join(list[index])
+        SET list[index] TO list[index] + "\n"
+    ENDIF
+    SET file To open("hospital.txt","w")
+    file.writelines(list)
+    file.close
+
+DEFINE FUNCTION updateInventory()
+    OUTPUT("Updating Inventory")
+    OUTPUT("==================")
+    SET correctCode TO False
+    DOWHILE correctCode EQUALS False
+        SET sh_code TO INPUT('Enter supplier/hospital code: ')
+        IF sh_code EQUALS "s111" or sh_code EQUALS "h111" or sh_code EQUALS "s222" or sh_code EQUALS "h222" or sh_code EQUALS "s333" or sh_code EQUALS "h333" THEN
+            SET correctCode TO True
+        ELSE:
+            OUTPUT("Incorrect supplier/hospital code")
+        ENDIF
+    ENDO
+    SET correct TO False
+    DOWHILE correct EQUALS False
+        SET item_description TO INPUT('Enter item code to update: ')
+        IF item_description EQUALS "HC" or item_description EQUALS "FS" or item_description EQUALS "MS" or item_description EQUALS "GL" or item_description EQUALS "GW" or item_description EQUALS "SC" THEN
+            SET correct TO True
+        ELSE:
+            OUTPUT("Incorrect item code")
+        ENDIF
+    ENDO
+    SET corNum TO False
+    DOWHILE corNum EQUALS False
+        SET item_quantity TO INPUT("Enter the updated quantity. Enter - FOR Terminate: ")
+        IF sh_code EQUALS "h111" or sh_code EQUALS "h222" or sh_code EQUALS "h333" THEN
+            IF item_quantity.startswith("-") and item_quantity[1:].isdigit() THEN
+                SET corNum TO True
+            ELSE:
+                OUTPUT("Incorrect number")
+        ELSEIF sh_code EQUALS "s111" or sh_code EQUALS "s222" or sh_code EQUALS "s333" THEN
+            IF item_quantity.isdigit() EQUALS True THEN
+                SET corNum TO True
+            ELSE:
+                OUTPUT("Incorrect number")
+        ELSE:
+            OUTPUT("Incorrect number")
+        ENDIF
+    ENDO
+    SET file TO open('ppe.txt','r').readlines()
+    SET count TO 0
+    FOR line IN file:
+        SET line TO line.strip().split(",")
+        IF line[0] EQUALS item_description THEN
+            IF (int(line[2]) + int(item_quantity)) >= 0 THEN
+                SET line[2] TO str(int(line[2]) + int(item_quantity)) + "\n"
+                SET file[count] TO ",".join(line)
+            ELSE:
+                OUTPUT("Result will be less than ZERO!!!")
+            ENDIF
+        ENDIF
+        count += 1
+    ENDFOR
+    IF sh_code[0] EQUALS "s" THEN
+        SET list TO open('supplier.txt', 'r').readlines()
+        IF sh_code EQUALS "s111" THEN
+            SET list[0] TO list[0].strip().split(",")
+            IF item_description EQUALS "HC" THEN
+                SET list[0][2] TO str(int(list[0][2]) + int(item_quantity))
+                SET list[0] TO ",".join(list[0])
+                SET list[0] TO list[0] + "\n"
+            ELSEIF item_description EQUALS "FS" THEN
+                SET list[0][4] TO str(int(list[0][4]) + int(item_quantity)) + "\n"
+                SET list[0] TO ",".join(list[0])
+            ENDIF
+        ELSEIF sh_code EQUALS "s222" THEN            
+            SET list[1] TO list[1].strip().split(",")
+            IF item_description EQUALS "MS" THEN
+                SET list[1][2] TO str(int(list[1][2]) + int(item_quantity))
+                SET list[1] TO ",".join(list[1])
+                SET list[1] TO list[1] + "\n"
+            ELSEIF item_description EQUALS "GL" THEN
+                SET list[1][4] TO str(int(list[1][4]) + int(item_quantity)) + "\n"
+                SET list[1] TO ",".join(list[1])
+            ENDIF
+        ELSEIF sh_code EQUALS "s333" THEN
+            SET list[2] TO list[2].strip().split(",")
+            IF item_description EQUALS "GW" THEN
+                SET list[2][2] TO str(int(list[2][2]) + int(item_quantity))
+                SET list[2] TO ",".join(list[2])
+                SET list[2] TO list[2] + "\n"
+            ELSEIF item_description EQUALS "SC" THEN
+                SET list[2][4] TO str(int(list[2][4])+int(item_quantity)) + "\n"
+                SET list[2] TO ",".join(list[2])
+            ENDIF
+        ENDIF
+        SET write TO open('supplier.txt', 'w')
+        write.writelines(list)
+        write.close()      
+    IF sh_code[0] EQUALS "h" THEN
+        IF sh_code EQUALS 'h111' THEN
+            hospital(0,item_description,item_quantity)       
+        ELSEIF sh_code EQUALS 'h222' THEN
+            hospital(1,item_description,item_quantity)
+        ELSEIF sh_code EQUALS 'h333' THEN
+            hospital(2,item_description,item_quantity)       
+        ENDIF
+    ENDIF
+    SET write TO open('ppe.txt', 'w')
+    write.writelines(file)
+    write.close()
+    SET date TO str(datetime.date.today())
+    SET writed TO open("distribution.txt","a")
+    writed.write("\n" + sh_code + "," + item_description + "," + item_quantity+ "," + date)
+    writed.close
+DEFINE FUNCTION supMenu()
+    SET filed TO open("distribution.txt","r").readlines()
+    SET files TO open("supplier.txt","r")
+    SET back TO False
+    DOWHILE back EQUALS False
+        OUTPUT("""
+    
+(1) Search by Item Code
+(2) Search by Supplier Code
+(3) Print All Supplier Transaction
+(4) Back
+
+        """)
+        SET choice TO INPUT("Please enter choice: ")
+        IF choice EQUALS "1" THEN
+            SET correct TO False
+            DOWHILE correct EQUALS False
+                SET item_description TO INPUT('Enter item code: ')
+                IF item_description EQUALS "HC" or item_description EQUALS "FS" or item_description EQUALS "MS" or item_description EQUALS "GL" or item_description EQUALS "GW" or item_description EQUALS "SC" THEN
+                    SET correct TO True
+                ELSE:
+                    OUTPUT("Incorrect item code")
+                ENDIF
+            ENDO
+            FOR index IN filed:
+                SET index TO index.strip().split(",")
+                IF index[1] EQUALS item_description THEN
+                    IF index[0] EQUALS "s111" or index[0] EQUALS "s222" or index[0] EQUALS "s333" THEN
+                        OUTPUT(index[1] + " Added by: " + index[0] + " Quantity: " + index[2] + " Date: " + index[3])
+                    ENDIF
+                ENDIF
+            ENDFOR
+            FOR index IN files:
+                SET index TO index.strip().split(",")
+                IF index[1] EQUALS item_description THEN
+                    OUTPUT("\nIn Total Added " + index[2] + " IN "  + item_description)
+                ELSEIF index[3] EQUALS item_description THEN
+                    OUTPUT("\nIn Total Added " + index[4] + " IN " + item_description)
+                ENDIF
+            ENDFOR
+            SET back TO True
+        ELSEIF choice EQUALS "2" THEN
+    
+            SET correct TO False
+            DOWHILE correct EQUALS False
+                SET s_code TO INPUT('Enter supplier code: ')
+                IF s_code EQUALS "s111" or s_code EQUALS "s222" or s_code EQUALS "s333" THEN
+                    SET correct TO True
+                ELSE:
+                    OUTPUT("Incorrect Supplier code")
+                ENDIF
+            ENDO
+            FOR index IN filed:
+                SET index TO index.strip().split(",")
+                IF index[0] EQUALS s_code THEN
+                    OUTPUT(index[1] + " Added by: " + index[0] + " Quantity: " + index[2] + " Date: " + index[3])
+                ENDIF
+            ENDFOR
+            FOR index IN files:
+                SET index TO index.strip().split(",")
+                IF index[0] EQUALS s_code THEN
+                    OUTPUT("\nIn Total " + s_code + " added "  + index[2] + " of "+index[1]+" and "+ index[4] + " of "+index[3])
+                ENDIF
+            ENDFOR
+            SET back TO True
+        ELSEIF choice EQUALS "3" THEN
+            FOR index IN filed:
+                SET index TO index.strip().split(",")
+                IF index[0] EQUALS "s111" or index[0] EQUALS "s222" or index[0] EQUALS "s333" THEN
+                    OUTPUT(index[1] + " Added by: " + index[0] + " Quantity: " + index[2] + " Date: " + index[3])
+                ENDIF
+            ENDFOR
+            SET back TO True
+        ELSEIF choice EQUALS "4" THEN
+            SET back TO True
+
+        ELSE:
+            OUTPUT("Incorrect Input!")
+        ENDIF
+    ENDIF
+    ENDO
+
+DEFINE FUNCTION hosMenu()
+    SET filed TO open("distribution.txt","r").readlines()
+    SET fileh TO open("hospital.txt","r")
+    SET back TO False
+    DOWHILE back EQUALS False
+        OUTPUT("""
+    
+(1) Search by Item Code
+(2) Search by Hospital Code
+(3) Print All Hospital Transaction
+(4) Print All Available Stock
+(5) Back
+        
+        """)
+        SET choice TO INPUT("Please enter choice: ")
+        IF choice EQUALS "1" THEN
+            SET correct TO False
+            DOWHILE correct EQUALS False
+                SET item_description TO INPUT('Enter item code: ')
+                IF item_description EQUALS "HC" or item_description EQUALS "FS" or item_description EQUALS "MS" or item_description EQUALS "GL" or item_description EQUALS "GW" or item_description EQUALS "SC" THEN
+                    SET correct TO True
+                ELSE:
+                    OUTPUT("Incorrect item code")
+                ENDIF
+            ENDO
+            FOR index IN filed:
+                SET index TO index.strip().split(",")
+                IF index[1] EQUALS item_description THEN
+                    IF index[0] EQUALS "h111" or index[0] EQUALS "h222" or index[0] EQUALS "h333" THEN
+                        OUTPUT(index[1] + " Taken by: " + index[0] + " Quantity: " + index[2] + " Date: " + index[3])
+                    ENDIF
+                ENDIF   
+            ENDFOR            
+            FOR index IN fileh:
+                SET index TO index.strip().split(",")
+                IF index[1] EQUALS item_description THEN
+                    OUTPUT("\nIn Total Taken " + index[2] + " by "  + index[0])
+                ELSEIF index[3] EQUALS item_description THEN
+                    OUTPUT("\nIn Total Added " + index[4] + " by "  + index[0])
+                ELSEIF index[5] EQUALS item_description THEN
+                    OUTPUT("\nIn Total Added " + index[6] + " by "  + index[0])
+                ELSEIF index[7] EQUALS item_description THEN
+                    OUTPUT("\nIn Total Added " + index[8] + " by "  + index[0])
+                ELSEIF index[9] EQUALS item_description THEN
+                    OUTPUT("\nIn Total Added " + index[10] + " by "  + index[0])
+                ELSEIF index[11] EQUALS item_description THEN
+                    OUTPUT("\nIn Total Added " + index[12] + " by "  + index[0])
+                ENDIF
+            ENDFOR
+            SET back TO True
+        ELSEIF choice EQUALS "2" THEN
+            SET correct TO False
+            DOWHILE correct EQUALS False
+                SET h_code TO INPUT('Enter Hospital code: ')
+                IF h_code EQUALS "h111" or h_code EQUALS "h222" or h_code EQUALS "h333" THEN
+                    SET correct TO True
+                ELSE:
+                    OUTPUT("Incorrect Supplier code")
+                ENDIF
+            ENDO
+            FOR index IN filed:
+                SET index TO index.strip().split(",")
+                IF index[0] EQUALS h_code THEN
+                    OUTPUT(index[1] + " Taken by: " + index[0] + " Quantity: " + index[2] + " Date: " + index[3])
+                ENDIF
+            ENDFOR
+            FOR index IN fileh:
+                SET index TO index.strip().split(",")
+                IF index[0] EQUALS h_code THEN
+                    OUTPUT("\nItems IN stock:")
+                    OUTPUT(index[1]+": "+index[2],index[3]+": "+index[4],index[5]+": "+index[6],index[7]+": "+index[8],index[9]+": "+index[10],index[11]+": "+index[12],)
+                ENDIF
+            ENDFOR
+            SET back TO True        
+        ELSEIF choice EQUALS "3" THEN
+            FOR index IN filed:
+                SET index TO index.strip().split(",")
+                IF index[0] EQUALS "h111" or index[0] EQUALS "h222" or index[0] EQUALS "h333" THEN
+                    OUTPUT(index[1] + " Taken by: " + index[0] + " Quantity: " + index[2] + " Date: " + index[3])
+                ENDIF
+            ENDFOR
+            SET back TO True      
+        ELSEIF choice EQUALS "4" THEN
+            FOR index IN fileh:
+                SET index TO index.strip().split(",")
+                OUTPUT("\nItems IN "+index[0]+" stock:")
+                OUTPUT(index[1]+": "+index[2],index[3]+": "+index[4],index[5]+": "+index[6],index[7]+": "+index[8],index[9]+": "+index[10],index[11]+": "+index[12],)
+            ENDFOR
+            SET back TO True        
+        ELSEIF choice EQUALS "5" THEN
+            SET back TO True
+        ELSE:
+            OUTPUT("Incorrect Input!")
+        ENDIF
+    ENDO
+
+DEFINE FUNCTION searchInventory()
+    SET back TO False
+    DOWHILE back EQUALS False
+        OUTPUT("""
+    
+(1) Search by Supplier
+(2) Search by Hospital
+(3) Back 
+    
+        """)
+        SET choice TO INPUT("Please enter your choice: ")
+        IF choice EQUALS "1" THEN
+            supMenu()
+        ELSEIF choice EQUALS "2" THEN
+            hosMenu()
+        ELSEIF choice EQUALS "3" THEN
+            SET back TO True
+        ELSE:
+            OUTPUT("Incorrect Input!")
+        ENDIF
+    ENDO
+        
+DEFINE FUNCTION PrintInventory()
+    SET file TO open("ppe.txt","r").readlines()
+    SET back TO False
+    DOWHILE back EQUALS False
+        OUTPUT("""
+    
+(1) Print Inventory IN Ascending Order
+(2) Print Inventory Less than 25 Items
+(3) Back        
+
+        """)
+        SET choice TO INPUT("Please Enter choice: ")
+        IF choice EQUALS "1" THEN
+            OUTPUT("===========================")
+            SET newfile TO []
+            FOR index IN file:
+                SET index TO index.strip().split(",")
+                newfile.append(index)
+            ENDFOR
+            SET newfile TO sorted(newfile, key TO lambda number: int(number[2]), reverse TO True)
+            FOR index IN newfile:
+                OUTPUT(index[0] + ": " + index[2])
+            ENDFOR
+            OUTPUT("===========================")
+            SET back TO True
+        ELSEIF choice EQUALS "2" THEN
+            OUTPUT("===========================")
+            FOR index IN file:
+
+                SET index TO index.strip().split(",")
+                IF int(index[2]) <= 25 THEN
+                    OUTPUT(index[0] + ": " + index[2])
+                ENDIF
+            ENDFOR
+            OUTPUT("===========================")
+
+            SET back TO True
+        ELSEIF choice EQUALS "3" THEN
+            SET back TO True
+        ELSE:
+            OUTPUT("Incorrect Input!")
+        ENDIF
+    ENDO
+menuDisplay()
+END
